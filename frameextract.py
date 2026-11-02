@@ -111,7 +111,6 @@ class FrameExtractor(QWidget):
 
         self.backend = None
         self.backend_name = ""
-        self.video_path = None
         self.video_name = ""
         self.total_frames = 0
         self.fps = 30.0
@@ -205,7 +204,6 @@ class FrameExtractor(QWidget):
             self.backend.release()
         self.backend = new_backend
         self.backend_name = backend_name
-        self.video_path = path
         self.video_name = os.path.splitext(os.path.basename(path))[0]
         self.total_frames = self.backend.total_frames
         self.fps = self.backend.fps

@@ -10,13 +10,13 @@ Grabbing one clean frame from a video on Linux usually means one of two bad opti
 
 | Idle state | Loaded and scrubbing |
 |---|---|
-| ![idle state](docs/screenshot-idle.png) | ![loaded frame](docs/screenshot-loaded.png) |
+| ![idle state](docs/images/screenshot-idle.png) | ![loaded frame](docs/images/screenshot-loaded.png) |
 
 ## Architecture
 
 Video loading never touches the GUI thread. A `QThread` (`LoaderThread`) handles backend selection in the background, so the window stays responsive  and closable  no matter how long decoding takes.
 
-![backend selection flow](docs/architecture.png)
+![backend selection flow](docs/images/architecture.png)
 
 **Why two backends instead of one:** `cv2.CAP_PROP_POS_FRAMES`  OpenCV's standard seek call  is documented as unreliable on variable frame rate (VFR) footage, which is the default recording mode on most Android cameras. A request for frame 503 can silently return frame 500 while the getter still reports 503 as correct. FrameExtract tries [BestSource](https://github.com/vapoursynth/bestsource) first, a VapourSynth plugin that hash-indexes every frame on first open and guarantees exact seeking afterward. If BestSource isn't installed, fails, or takes longer than 6 seconds (bounded with a daemon-thread timeout so a bad file can never hang the app), it transparently falls back to OpenCV with a seek-verify-retry loop that checks the landed frame after every seek and re-seeks with drift correction. The active backend is always shown in the window title, so you know which guarantee you're getting.
 
@@ -31,24 +31,40 @@ Video loading never touches the GUI thread. A `QThread` (`LoaderThread`) handles
 
 ## Installation
 
-Dependencies:
+**1. System packages** (Arch, CachyOS, Manjaro):
 
 ```
-paru -S python-pyqt6 python-opencv python-numpy
-paru -S vapoursynth vapoursynth-plugin-bestsource
+sudo pacman -S --needed python python-pyqt6 python-opencv python-numpy
+paru -S vapoursynth vapoursynth-plugin-bestsource   # optional, the bestsource plugin is in the AUR
 ```
 
-The BestSource packages are optional  if they fail to build or you skip them, FrameExtract automatically runs on the OpenCV fallback backend instead.
+The BestSource packages are optional; if they fail to build or you skip them, FrameExtract automatically runs on the OpenCV fallback backend instead.
 
-Install the app:
+**2. Get FrameExtract**
 
 ```
-git clone https://github.com/muzasio/frameextract.git
-cd frameextract
-./install.sh
+git clone https://github.com/Muzasio/frame-extractor.git
+cd frame-extractor
 ```
 
-This copies the script to `~/.local/bin/frameextract.py` and registers the desktop launcher at `~/.local/share/applications/frameextract.desktop`, which is what enables dragging a video onto the app icon in your launcher or taskbar.
+**3. Install the script and the desktop launcher**
+
+```
+mkdir -p ~/.local/bin ~/.local/share/applications
+install -m 755 frameextract.py ~/.local/bin/frameextract.py
+sed "s|__HOME__|$HOME|" frameextract.desktop > ~/.local/share/applications/frameextract.desktop
+update-desktop-database ~/.local/share/applications 2>/dev/null || true
+```
+
+The launcher is what enables dragging a video onto the app icon in your launcher or taskbar.
+
+### Remove it
+
+```
+rm -f ~/.local/bin/frameextract.py ~/.local/share/applications/frameextract.desktop
+```
+
+Then delete the `frame-extractor` folder.
 
 ## Usage
 
