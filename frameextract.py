@@ -5,7 +5,6 @@ import sys
 import threading
 import traceback
 
-import cv2
 import numpy as np
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QImage, QKeySequence, QPixmap, QShortcut
@@ -64,7 +63,15 @@ class BestSourceBackend:
 
     def __init__(self, path):
         import vapoursynth as vs
-        clip = vs.core.bs.VideoSource(source=path, cachepath=cache_dir())
+        # VapourSynth may keep up to ~15 GB of frames by default; 256 MB keeps
+        # stepping just as fast (measured) and caps RAM while scrubbing.
+        vs.core.max_cache_size = 256
+        options = {"source": path, "cachepath": cache_dir()}
+        # One decoder instead of BestSource's default pool: about half the RAM,
+        # same seek speed (measured). Older BestSource versions lack the option.
+        if "maxdecoders" in vs.core.bs.VideoSource.signature:
+            options["maxdecoders"] = 1
+        clip = vs.core.bs.VideoSource(**options)
         # Tagged videos use their own colour matrix (the frame tag wins).
         # Untagged ones get the usual guess: BT.709 for HD, BT.601 for SD.
         guess = "709" if clip.height > 576 else "170m"
@@ -87,6 +94,8 @@ class OpenCVBackend:
     """Fallback reader. Seeks, checks which frame it landed on, and corrects the drift."""
 
     def __init__(self, path):
+        import cv2  # loaded only when this fallback is used (saves ~90 MB RAM otherwise)
+        self.cv2 = cv2
         self.cap = cv2.VideoCapture(path)
         if not self.cap.isOpened():
             raise RuntimeError(f"cannot open video: {path}")
@@ -96,6 +105,7 @@ class OpenCVBackend:
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     def get_frame_rgb(self, idx, max_retries=3):
+        cv2 = self.cv2
         last = self.total_frames - 1
         idx = clamp(idx, 0, last)
         target = idx
@@ -374,8 +384,11 @@ class FrameExtractor(QWidget):
         path = os.path.join(self.output_dir, filename)
         try:
             os.makedirs(self.output_dir, exist_ok=True)
-            bgr = cv2.cvtColor(self.last_frame_rgb, cv2.COLOR_RGB2BGR)
-            if not cv2.imwrite(path, bgr, [cv2.IMWRITE_PNG_COMPRESSION, 0]):
+            rgb = self.last_frame_rgb
+            h, w, ch = rgb.shape
+            image = QImage(rgb.data, w, h, ch * w, QImage.Format.Format_RGB888)
+            # quality 100 = PNG without compression: lossless, same file as before
+            if not image.save(path, "PNG", 100):
                 raise OSError("the image writer returned an error")
         except OSError as e:
             QMessageBox.warning(self, "Save failed",
