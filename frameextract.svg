@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>FrameExtract</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4250"/>
+      <stop offset="1" stop-color="#232831"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5fb3f0"/>
+      <stop offset="1" stop-color="#a9dcff"/>
+    </linearGradient>
+    <clipPath id="tile">
+      <rect x="8" y="8" width="240" height="240" rx="44"/>
+    </clipPath>
+    <clipPath id="photo">
+      <rect x="66" y="126" width="124" height="96" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <!-- app tile -->
+  <rect x="8" y="8" width="240" height="240" rx="44" fill="url(#bg)"/>
+
+  <!-- film strip -->
+  <g clip-path="url(#tile)">
+  <rect x="8" y="34" width="240" height="72" fill="#11141a"/>
+  <g fill="#e8ecf2">
+    <rect x="18" y="40" width="12" height="9" rx="2"/><rect x="46" y="40" width="12" height="9" rx="2"/>
+    <rect x="74" y="40" width="12" height="9" rx="2"/><rect x="102" y="40" width="12" height="9" rx="2"/>
+    <rect x="130" y="40" width="12" height="9" rx="2"/><rect x="158" y="40" width="12" height="9" rx="2"/>
+    <rect x="186" y="40" width="12" height="9" rx="2"/><rect x="214" y="40" width="12" height="9" rx="2"/>
+    <rect x="18" y="91" width="12" height="9" rx="2"/><rect x="46" y="91" width="12" height="9" rx="2"/>
+    <rect x="74" y="91" width="12" height="9" rx="2"/><rect x="102" y="91" width="12" height="9" rx="2"/>
+    <rect x="130" y="91" width="12" height="9" rx="2"/><rect x="158" y="91" width="12" height="9" rx="2"/>
+    <rect x="186" y="91" width="12" height="9" rx="2"/><rect x="214" y="91" width="12" height="9" rx="2"/>
+  </g>
+  </g>
+  <!-- side frames (dimmed) -->
+  <rect x="16" y="54" width="62" height="32" rx="3" fill="#4a5466"/>
+  <rect x="178" y="54" width="62" height="32" rx="3" fill="#4a5466"/>
+  <!-- selected frame: empty slot with highlight -->
+  <rect x="92" y="53" width="72" height="34" rx="3" fill="#11141a" stroke="#ffb02e" stroke-width="4" stroke-dasharray="7 5"/>
+
+  <!-- arrow from slot to the picture -->
+  <path d="M128 92 V114" stroke="#ffb02e" stroke-width="8" stroke-linecap="round"/>
+  <path d="M114 106 L128 121 L142 106" fill="none" stroke="#ffb02e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- extracted picture -->
+  <rect x="60" y="120" width="136" height="108" rx="10" fill="#ffffff"/>
+  <g clip-path="url(#photo)">
+    <rect x="66" y="126" width="124" height="96" fill="url(#sky)"/>
+    <circle cx="160" cy="152" r="12" fill="#ffd34d"/>
+    <path d="M66 222 L108 168 L134 200 L150 182 L190 222 Z" fill="#2f9e5b"/>
+    <path d="M66 222 L108 168 L120 184 L98 222 Z" fill="#257d48"/>
+  </g>
+</svg>

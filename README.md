@@ -50,8 +50,9 @@ cd frame-extractor
 **3. Install the script and the desktop launcher**
 
 ```
-mkdir -p ~/.local/bin ~/.local/share/applications
+mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/scalable/apps
 install -m 755 frameextract.py ~/.local/bin/frameextract.py
+install -m 644 frameextract.svg ~/.local/share/icons/hicolor/scalable/apps/frameextract.svg
 sed "s|__HOME__|$HOME|" frameextract.desktop > ~/.local/share/applications/frameextract.desktop
 update-desktop-database ~/.local/share/applications 2>/dev/null || true
 ```
@@ -61,7 +62,9 @@ The launcher is what enables dragging a video onto the app icon in your launcher
 ### Remove it
 
 ```
-rm -f ~/.local/bin/frameextract.py ~/.local/share/applications/frameextract.desktop
+rm -f ~/.local/bin/frameextract.py ~/.local/share/applications/frameextract.desktop \
+      ~/.local/share/icons/hicolor/scalable/apps/frameextract.svg
+rm -rf ~/.cache/frameextract
 ```
 
 Then delete the `frame-extractor` folder.
@@ -83,11 +86,11 @@ frameextract.py video.mp4
 | `S` or `Enter` | Save current frame as PNG |
 | `Ctrl + O` | Open a video file |
 
-Output defaults to `<video_directory>/extracted_frames/`, filename pattern `{videoname}_frame{index:06d}.png`.
+Output defaults to `<video_directory>/extracted_frames/` (created on the first save), filename pattern `{videoname}_frame{index:06d}.png`. If that folder can't be written, the app tells you and you can pick another one with **Output Folder**.
 
 ## Known limitations
 
-- First open of a video with the BestSource backend triggers a one-time indexing pass (cached to `.bsindex/` next to the source file); subsequent opens of the same file are instant
+- First open of a video with the BestSource backend triggers a one-time indexing pass (cached in `~/.cache/frameextract/`); subsequent opens of the same file are instant
 - BestSource requires AUR packages on Arch-based distros; not available as a standard repo package on most distributions
 - GPU-accelerated decode was evaluated and deliberately excluded  this tool's workload is seek-bound (random access into short clips), not throughput-bound, so hardware decode adds a driver dependency without a measurable benefit
 
